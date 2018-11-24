@@ -35,15 +35,18 @@ class GrattaEVinci {
   int vincenti[5];
   int jolly;
   int numeri[15][2];
-	SDL_Window* window;
-	SDL_Renderer* renderer;
-	TTF_Font* font;
-	SDL_Texture* texture;
+  bool scoperti[21];
+  SDL_Window* window;
+  SDL_Renderer* renderer;
+  TTF_Font* font;
+  SDL_Texture* texture;
 public:
   GrattaEVinci();
   void gratta(int x, int y, int r);
   int vincita();
   void render();
+  bool controlla(int X, int Y, int d, int d2);
+  bool vittoria();
 };
 
 GrattaEVinci::GrattaEVinci() {
@@ -100,6 +103,36 @@ void GrattaEVinci::render() {
 	}
 	SDL_RenderCopy(renderer, texture, NULL, NULL);
 	SDL_RenderPresent(renderer);
+}
+
+bool GrattaEVinci::controlla(int X, int Y, int d, int d2){
+        for(int x=0;x<d;x+=5){
+             for(int y=0;y<d2;y+=5){
+                if(GetPixelColor(surface,X+x,Y+y)!=0){
+                   return false;
+                }
+             }
+        }
+        return true;
+}
+
+bool GrattaEVinci::vittoria(){
+  for(int i=0;i<6;i++){
+    if(!scoperti[i]){
+        scoperti[i]=controlla(50+i*(115), 880,90,90);
+        if(!scoperti[i])return false;
+    }
+  }
+
+    for(int i=0;i<5;i++){
+       for(int l=0;l<3;l++){
+         if(!scoperti[5+i*3+l]){
+            scoperti[5+i*3+l]=controlla(70+i*(140), 1070+135*l,90,130);
+            if(!scoperti[5+i*3+l])return false;
+	 }
+       }
+    }
+  return true;
 }
 
 int main() {
