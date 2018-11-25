@@ -31,7 +31,7 @@ Uint32 getPixelColor(SDL_Texture* texture, int X, int Y) {
 
 void writeText(SDL_Renderer* renderer, int x, int y, const std::string& text, TTF_Font* font) {
 	int w, h;
-	SDL_Color textColor = { 0xFF, 0xFF, 0xFF };
+	SDL_Color textColor = { 0x00, 0x00, 0x00 };
 	SDL_Surface* textSurface = TTF_RenderUTF8_Blended(font, text.c_str(), textColor);
 	SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
 	TTF_SizeText(font, text.c_str(), &w, &h);
@@ -82,8 +82,8 @@ GrattaEVinci::GrattaEVinci()
 		std::cout << "Error while loading texture: " << SDL_GetError();
 		return;
 	}
-	SDL_Surface* formattedSurface = SDL_ConvertSurfaceFormat( surface, SDL_GetWindowPixelFormat( window ), 0 );
-	texture = SDL_CreateTexture(renderer, SDL_GetWindowPixelFormat(window), SDL_TEXTUREACCESS_STREAMING, formattedSurface->w, formattedSurface->h);
+	SDL_Surface* formattedSurface = SDL_ConvertSurfaceFormat( surface, SDL_PIXELFORMAT_RGBA8888, 0 );
+	texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, formattedSurface->w, formattedSurface->h);
 
 	int pitch;
 	void* pixels;
@@ -94,7 +94,6 @@ GrattaEVinci::GrattaEVinci()
 	SDL_FreeSurface(surface);
 	SDL_FreeSurface(formattedSurface);
 	SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
-	SDL_SetTextureAlphaMod( texture, 63 );
 
   srand(time(NULL));
   for(int i = 0; i < 5; i++) {
@@ -125,10 +124,10 @@ void GrattaEVinci::gratta(int x, int y, int r) {
 	int pitch, w, h;
 	void *pixels;
 	SDL_QueryTexture(texture, NULL, NULL, &w, &h);
+	SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
 	SDL_LockTexture(texture, NULL, &pixels, &pitch);
 	Uint32 *upixels = (Uint32*) pixels;
-	Uint32 format = SDL_GetWindowPixelFormat( window );
-	SDL_PixelFormat* mappingFormat = SDL_AllocFormat( format );
+	SDL_PixelFormat* mappingFormat = SDL_AllocFormat( SDL_PIXELFORMAT_RGBA8888 );
 	Uint32 transparent = SDL_MapRGBA(mappingFormat, 0x00, 0x00, 0x00, 0x00);
 
 	for(int i = 0; i < r; i++) {
@@ -148,8 +147,6 @@ void GrattaEVinci::gratta(int x, int y, int r) {
 void GrattaEVinci::render() {
 	SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
 	SDL_RenderClear(renderer);
-	//SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
-	SDL_RenderCopy(renderer, texture, NULL, NULL);
 
 	for(int i = 0; i < 5; i++) {
 		writeText(renderer, (80 + i*120) / 2, 900/2, std::to_string(vincenti[i]), font);
@@ -162,6 +159,7 @@ void GrattaEVinci::render() {
   	}
   }
 
+	SDL_RenderCopy(renderer, texture, NULL, NULL);
 	SDL_RenderPresent(renderer);
 }
 
